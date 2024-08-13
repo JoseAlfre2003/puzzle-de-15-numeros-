@@ -1,0 +1,181 @@
+#include <iostream>
+#include <algorithm>
+
+using namespace std;
+#define SIZE 4
+
+void printBoard(int board[SIZE][SIZE]) {
+    for (int i = 0; i < SIZE; ++i) {
+        for (int j = 0; j < SIZE; ++j) {
+            if (board[i][j] == 0)
+                cout << "   ";
+            else
+                cout << board[i][j] << " ";
+        }
+        cout << endl;
+    }
+}
+
+bool isSolved(int board[SIZE][SIZE]) {
+    int number = 1;
+    for (int i = 0; i < SIZE; ++i) {
+        for (int j = 0; j < SIZE; ++j) {
+            if (i == SIZE - 1 && j == SIZE - 1) {
+                return board[i][j] == 0;
+            }
+            if (board[i][j] != number++) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+void swapTiles(int board[SIZE][SIZE], int x1, int y1, int x2, int y2) {
+    int temp = board[x1][y1];
+    board[x1][y1] = board[x2][y2];
+    board[x2][y2] = temp;
+}
+
+bool makeMove(int board[SIZE][SIZE], int direction) {
+    int zeroRow = -1, zeroCol = -1;
+    for (int i = 0; i < SIZE; ++i) {
+        for (int j = 0; j < SIZE; ++j) {
+            if (board[i][j] == 0) {
+                zeroRow = i;
+                zeroCol = j;
+                break;
+            }
+        }
+    }
+
+    if (zeroRow == -1 || zeroCol == -1) return false;
+
+    switch (direction) {
+        case 1: // Up
+            if (zeroRow > 0) {
+                swapTiles(board, zeroRow, zeroCol, zeroRow - 1, zeroCol);
+                return true;
+            }
+            break;
+        case 2: // Down
+            if (zeroRow < SIZE - 1) {
+                swapTiles(board, zeroRow, zeroCol, zeroRow + 1, zeroCol);
+                return true;
+            }
+            break;
+        case 3: // Left
+            if (zeroCol > 0) {
+                swapTiles(board, zeroRow, zeroCol, zeroRow, zeroCol - 1);
+                return true;
+            }
+            break;
+        case 4: // Right
+            if (zeroCol < SIZE - 1) {
+                swapTiles(board, zeroRow, zeroCol, zeroRow, zeroCol + 1);
+                return true;
+            }
+            break;
+    }
+    return false;
+}
+
+void shuffleBoard(int board[SIZE][SIZE]) {
+    int numbers[SIZE * SIZE];
+    for (int i = 0; i < SIZE * SIZE; ++i) {
+        numbers[i] = i;
+    }
+    random_shuffle(numbers, numbers + SIZE * SIZE);
+
+    for (int i = 0; i < SIZE; ++i) {
+        for (int j = 0; j < SIZE; ++j) {
+            board[i][j] = numbers[i * SIZE + j];
+        }
+    }
+}
+
+void jugar(int jugador, int puntajes[3]) {
+    int board[SIZE][SIZE];
+    shuffleBoard(board);
+    int movimientos = 0;
+
+    while (true) {
+        printBoard(board);
+
+        if (isSolved(board)) {
+            cout << "¡Felicidades Jugador " << jugador + 1 << "! Has resuelto el puzzle en " << movimientos << " movimientos." << endl;
+            puntajes[jugador] = movimientos;
+            break;
+        }
+
+        cout << "Introduce el movimiento (1 = Arriba, 2 = Abajo, 3 = Izquierda, 4 = Derecha): ";
+        int move;
+        cin >> move;
+
+        if (!makeMove(board, move)) {
+            cout << "Movimiento inválido. Inténtalo de nuevo." << endl;
+        } else {
+            movimientos++;
+        }
+    }
+}
+
+void mostrarPuntajes(int puntajes[3]) {
+    cout << "\nResultados Finales:\n";
+    for (int i = 0; i < 3; ++i) {
+        cout << "Jugador " << i + 1 << ": " << puntajes[i] << " movimientos\n";
+    }
+
+    int ganador = 0;
+    for (int i = 1; i < 3; ++i) {
+        if (puntajes[i] < puntajes[ganador]) {
+            ganador = i;
+        }
+    }
+
+    cout << "\nEl ganador es el Jugador " << ganador + 1 << " con " << puntajes[ganador] << " movimientos. ¡Felicitaciones!\n";
+}
+
+void mostrarCreditos() {
+    cout << "\nCréditos:\n";
+    cout << "José Catagña\n";
+
+    // Añade más integrantes si es necesario
+}
+
+int main() {
+    int puntajes[3] = {0};
+    char opcion;
+
+    do {
+        cout << "\nBienvenido al Juego de Puzzle\n";
+        cout << "1. Jugar\n";
+        cout << "2. Puntajes\n";
+        cout << "3. Créditos\n";
+        cout << "4. Salir\n";
+        cout << "Seleccione una opción: ";
+        cin >> opcion;
+
+        switch (opcion) {
+            case '1':
+                for (int i = 0; i < 3; ++i) {
+                    cout << "\nJugador " << i + 1 << ", es tu turno.\n";
+                    jugar(i, puntajes);
+                }
+                break;
+            case '2':
+                mostrarPuntajes(puntajes);
+                break;
+            case '3':
+                mostrarCreditos();
+                break;
+            case '4':
+                cout << "Gracias por jugar. ¡Hasta luego!\n";
+                break;
+            default:
+                cout << "Opción no válida. Por favor, intente nuevamente.\n";
+        }
+    } while (opcion != '4');
+
+    return 0;
+}
